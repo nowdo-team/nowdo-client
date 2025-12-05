@@ -1,49 +1,77 @@
 <template>
-  <div style="padding: 32px;">
-    <h1>NOWDO</h1>
-
-    <div style="margin-top: 24px; display: flex; gap: 16px; flex-wrap: wrap;">
-      <div class="card">
-        <h3>Profile</h3>
-        <p>Nickname: {{ auth.user?.nickname }}</p>
-        <p>Email: {{ auth.user?.email }}</p>
+  <section class="page stack dashboard">
+    <div class="surface panel dashboard-hero">
+      <div class="hero-copy">
+        <span class="pill tag-soft">오늘도 차분하게</span>
+        <h1>NOWDO에서 할 일을 정리하세요</h1>
+        <p>간결한 카드와 타이머로 해야 할 일을 한눈에 모았습니다. 가장 중요한 일부터 시작해 보세요.</p>
+        <div class="hero-actions">
+          <router-link class="btn ghost" to="/mypage">프로필 관리</router-link>
+          <button class="btn" type="button" @click="doLogout">로그아웃</button>
+        </div>
       </div>
-
-      <div class="card">
-        <h3>계정 상태 인데 이거 있어야 하나</h3> 
-        <p>Status: {{ auth.user?.status }}</p>
-      </div>
-
-      <div class="card">
-        <h3>Account</h3>
-        <router-link to="/mypage">마이페이지로</router-link><br />
-        <button @click="doLogout">Logout</button>
+      <div class="card profile-card">
+        <div class="profile-row">
+          <span class="label">닉네임</span>
+          <strong>{{ auth.user?.nickname || '-' }}</strong>
+        </div>
+        <div class="profile-row">
+          <span class="label">이메일</span>
+          <span>{{ auth.user?.email || '-' }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="label">상태</span>
+          <span class="pill">{{ auth.user?.status || 'ACTIVE' }}</span>
+        </div>
       </div>
     </div>
 
-    <div class="todo-section">
-      <div class="card todo-card">
-        <div class="todo-header">
-          <h3>TODO List</h3>
-          <button @click="loadTodos" :disabled="todosLoading">Refresh</button>
+    <div class="surface panel todo-shell">
+      <div class="todo-form">
+        <div class="section-title">
+          <h2>{{ editingId ? '할 일 수정' : '새 할 일 추가' }}</h2>
+          <span>{{ editingId ? '수정 후 저장하세요' : '짧게 적을수록 좋습니다' }}</span>
         </div>
-
-        <form class="todo-form" @submit.prevent="submitTodo">
-          <input v-model="form.content" type="text" placeholder="Add a task" required />
-          <div class="todo-form-row">
-            <input v-model="form.dueDate" type="datetime-local" required />
-            <select v-model="form.priority">
-              <option v-for="option in priorities" :key="option" :value="option">
-                {{ option }}
-              </option>
-            </select>
-            <input v-model="form.category" type="text" placeholder="Category (optional)" />
-            <button type="submit" :disabled="savingTodo">
-              {{ editingId ? 'Update' : 'Add' }}
-            </button>
-            <button v-if="editingId" type="button" @click="cancelEdit">Cancel</button>
+        <form class="stack" @submit.prevent="submitTodo">
+          <input v-model="form.content" class="input" type="text" placeholder="무엇을 해야 하나요?" required />
+          <div class="form-grid">
+            <label class="field">
+              <span>마감 시각</span>
+              <input v-model="form.dueDate" class="input" type="datetime-local" required />
+            </label>
+            <label class="field">
+              <span>우선순위</span>
+              <select v-model="form.priority" class="input">
+                <option v-for="option in priorities" :key="option" :value="option">
+                  {{ option }}
+                </option>
+              </select>
+            </label>
+            <label class="field">
+              <span>카테고리 (선택)</span>
+              <input v-model="form.category" class="input" type="text" placeholder="예: 업무" />
+            </label>
+            <div class="form-actions">
+              <button class="btn primary" type="submit" :disabled="savingTodo">
+                {{ savingTodo ? '저장 중...' : editingId ? '업데이트' : '추가' }}
+              </button>
+              <button v-if="editingId" class="btn ghost" type="button" @click="cancelEdit">취소</button>
+            </div>
           </div>
         </form>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="todo-list-block">
+        <div class="section-title">
+          <h2>TODO 목록</h2>
+          <div class="title-actions">
+            <button class="btn ghost" type="button" @click="loadTodos" :disabled="todosLoading">
+              {{ todosLoading ? '불러오는 중...' : '새로고침' }}
+            </button>
+          </div>
+        </div>
 
         <div class="todo-list" v-if="todos.length">
           <div v-for="todo in todos" :key="todo.id" class="todo-item">
@@ -55,27 +83,29 @@
                 <span :class="{ done: todo.completed }">{{ todo.content }}</span>
               </div>
               <div class="todo-meta">
-                <span>{{ formatDate(todo.dueDate) }}</span>
-                <span class="pill">{{ todo.priority }}</span>
-                <span v-if="todo.category" class="pill">{{ todo.category }}</span>
+                <span class="pill small">{{ formatDate(todo.dueDate) }}</span>
+                <span class="pill small tone">
+                  {{ todo.priority }}
+                </span>
+                <span v-if="todo.category" class="pill small tag-soft">{{ todo.category }}</span>
               </div>
             </div>
             <div class="todo-buttons">
-              <button type="button" class="ghost" @click="openTimer(todo)">타이머</button>
-              <button type="button" @click="startEdit(todo)">수정</button>
-              <button type="button" @click="removeTodo(todo)">삭제</button>
+              <button type="button" class="btn ghost tiny" @click="openTimer(todo)">타이머</button>
+              <button type="button" class="btn tiny" @click="startEdit(todo)">수정</button>
+              <button type="button" class="btn ghost tiny" @click="removeTodo(todo)">삭제</button>
             </div>
           </div>
         </div>
-        <p v-else class="empty-copy">No todos yet.</p>
+        <p v-else class="muted empty-copy">아직 할 일이 없습니다. 위에서 새로운 일을 추가해 보세요.</p>
       </div>
     </div>
 
     <div v-if="timerVisible" class="timer-overlay" @click.self="closeTimer">
-      <div class="timer-modal">
+      <div class="timer-modal surface glass">
         <header class="timer-header">
           <div>
-            <p class="timer-label">이 일정의 타이머</p>
+            <p class="timer-label">집중 타이머</p>
             <h2 class="timer-title">{{ timerTarget?.content }}</h2>
           </div>
           <button class="close-btn" type="button" @click="closeTimer">×</button>
@@ -84,7 +114,7 @@
         <div class="timer-display">
           <div class="timer-clock">{{ formatClock(timerState.remainingMs) }}</div>
           <p class="timer-subcopy">
-            {{ timerState.running ? '달리는 중...' : '시간을 잡고 시작하세요' }}
+            {{ timerState.running ? '타이머가 실행 중입니다.' : '시간을 설정하고 시작해보세요.' }}
           </p>
         </div>
 
@@ -104,16 +134,16 @@
         </div>
 
         <div class="timer-actions">
-          <button type="button" class="primary" @click="startTimer" :disabled="timerState.running || timerState.remainingMs <= 0">
-            시작!
+          <button type="button" class="btn primary" @click="startTimer" :disabled="timerState.running || timerState.remainingMs <= 0">
+            시작
           </button>
-          <button type="button" @click="pauseTimer" :disabled="!timerState.running">일시정지</button>
-          <button type="button" @click="resetTimer" :disabled="timerState.running">리셋</button>
+          <button type="button" class="btn ghost" @click="pauseTimer" :disabled="!timerState.running">일시정지</button>
+          <button type="button" class="btn ghost" @click="resetTimer" :disabled="timerState.running">리셋</button>
         </div>
-        <p class="timer-hint">타이머는 창을 닫아도 계속 돌아갑니다.</p>
+        <p class="timer-hint">타이머는 열린 상태에서 동작합니다. 창을 닫지 말고 집중하세요.</p>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
@@ -360,209 +390,252 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.card {
-  width: 220px;
-  padding: 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fafafa;
-}
-.todo-section {
-  margin-top: 32px;
-}
-.todo-card {
-  width: 100%;
-  max-width: 960px;
-}
-.todo-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.todo-form {
+.dashboard-hero {
   display: grid;
-  gap: 8px;
-}
-.todo-form-row {
-  display: grid;
-  grid-template-columns: 1.3fr 0.7fr 1fr auto auto;
-  gap: 8px;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
   align-items: center;
 }
-.todo-form input,
-.todo-form select,
-.todo-form button {
-  height: 36px;
-  padding: 8px 10px;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  background: white;
-}
-.todo-form button {
-  cursor: pointer;
-}
-.todo-list {
-  margin-top: 16px;
+
+.hero-actions {
   display: flex;
-  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.profile-card {
+  display: grid;
   gap: 12px;
 }
+
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+}
+
+.profile-row .label {
+  color: var(--muted);
+}
+
+.todo-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.todo-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.todo-list-block {
+  display: grid;
+  gap: 14px;
+}
+
+.title-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.todo-list {
+  display: grid;
+  gap: 10px;
+}
+
 .todo-item {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eee;
-  align-items: flex-start;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fdfefe;
+  align-items: start;
 }
+
 .todo-check input {
   width: 18px;
   height: 18px;
 }
+
+.todo-title {
+  font-weight: 700;
+}
+
 .todo-title .done {
   text-decoration: line-through;
-  color: #777;
+  color: var(--muted);
 }
+
 .todo-meta {
   display: flex;
   gap: 8px;
-  margin-top: 4px;
-  font-size: 13px;
-  color: #555;
+  margin-top: 6px;
   flex-wrap: wrap;
+  color: var(--muted);
 }
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #f1f1f1;
-  font-size: 12px;
-}
+
 .todo-buttons {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
-.todo-buttons button {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #f7f7f7;
-  padding: 6px 10px;
-  cursor: pointer;
+
+.btn.tiny {
+  height: 34px;
+  padding: 0 12px;
+  box-shadow: none;
 }
-.todo-buttons .ghost {
-  background: white;
+
+.pill.small {
+  padding: 4px 8px;
+  font-size: 12px;
 }
+
+.pill.tone {
+  background: #eef2ff;
+  color: #312e81;
+  border: 1px solid #e0e7ff;
+}
+
 .empty-copy {
-  margin-top: 12px;
-  color: #777;
+  margin-top: 4px;
 }
+
 .timer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(15, 23, 42, 0.35);
   display: grid;
   place-items: center;
   padding: 20px;
-  z-index: 10;
+  z-index: 30;
 }
+
 .timer-modal {
-  width: min(600px, 100%);
-  background: #111827;
-  color: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid #1f2937;
+  width: min(620px, 100%);
+  border-radius: 18px;
+  padding: 22px;
 }
+
 .timer-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
 }
+
 .timer-label {
   font-size: 13px;
-  color: #9ca3af;
-  margin: 0 0 6px;
+  color: var(--muted);
 }
+
 .timer-title {
-  margin: 0;
-  font-size: 20px;
+  margin: 4px 0 0;
+  font-size: 22px;
 }
+
 .close-btn {
-  background: #1f2937;
+  background: #f1f5f9;
   border: none;
-  color: #e5e7eb;
-  font-size: 20px;
+  color: #0f172a;
+  font-size: 22px;
   line-height: 1;
   padding: 6px 10px;
   border-radius: 10px;
   cursor: pointer;
 }
+
 .timer-display {
-  margin: 24px 0 12px;
+  margin: 18px 0 10px;
   text-align: center;
 }
+
 .timer-clock {
-  font-size: 64px;
+  font-size: 56px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
+
 .timer-subcopy {
   margin-top: 6px;
-  color: #9ca3af;
+  color: var(--muted);
 }
+
 .timer-inputs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
   margin: 12px 0 8px;
 }
+
 .timer-inputs label {
   display: grid;
   gap: 6px;
   font-size: 14px;
 }
+
 .timer-inputs span {
-  color: #cbd5e1;
+  color: var(--muted);
 }
+
 .timer-inputs input {
   width: 100%;
   padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #1f2937;
-  background: #0b1220;
-  color: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  color: var(--text);
   font-size: 16px;
 }
+
 .timer-inputs.disabled {
   opacity: 0.85;
 }
+
 .timer-actions {
   display: flex;
   gap: 10px;
   margin-top: 12px;
 }
-.timer-actions button {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #1f2937;
-  background: #1f2937;
-  color: #e5e7eb;
-  cursor: pointer;
-}
-.timer-actions .primary {
-  background: #10b981;
-  border-color: #10b981;
-  color: #0b1220;
-  font-weight: 700;
-}
+
 .timer-hint {
   margin-top: 12px;
-  color: #9ca3af;
+  color: var(--muted);
   font-size: 13px;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .todo-item {
+    grid-template-columns: 1fr;
+  }
+  .todo-buttons {
+    justify-content: flex-start;
+  }
+  .timer-inputs {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  .timer-clock {
+    font-size: 44px;
+  }
 }
 </style>
