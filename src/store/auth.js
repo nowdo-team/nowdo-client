@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    loading: true   // ✅ 로그인 복구 중인지 여부
+    loading: true // 초기 로그인 상태 확인 중
   }),
   actions: {
     setUser(user) {

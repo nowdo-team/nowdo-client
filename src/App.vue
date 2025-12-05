@@ -1,6 +1,10 @@
 <template>
-  <NavBar />
-  <router-view />
+  <div class="app-shell">
+    <NavBar />
+    <main class="app-main">
+      <router-view />
+    </main>
+  </div>
 </template>
 
 <script setup>
@@ -14,9 +18,9 @@ const auth = useAuthStore()
 onMounted(async () => {
   try {
     const res = await getMyInfo()
-    auth.setUser(res.data)   // ✅ 새로고침 시 로그인 복구
+    auth.setUser(res.data)
   } catch (e) {
-    auth.clearUser()        // ✅ 세션 없으면 비로그인 유지
+    auth.clearUser()
   }
 })
 </script>

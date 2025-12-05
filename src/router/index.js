@@ -18,21 +18,20 @@ const router = createRouter({
   routes
 })
 
-
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
 
-  // 로그인 필요한 경로들
+  // 로그인이 필요한 경로들
   const needLogin = ['/main', '/mypage']
 
-  if(auth.loading){
+  if (auth.loading) {
     next()
     return
   }
 
   if (needLogin.includes(to.path) && !auth.user) {
-    alert('로그인이 필요합니다.')
-    next('/')   // 로그인 페이지로 강제 이동
+    alert('로그인이 필요한 페이지입니다.')
+    next('/')
     return
   }
 
