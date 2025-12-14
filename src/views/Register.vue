@@ -16,7 +16,22 @@
       <form class="stack" @submit.prevent="doRegister">
         <div class="field">
           <label for="email">이메일</label>
-          <input id="email" v-model="email" class="input" type="email" placeholder="name@email.com" required />
+          <div class="email-input-row">
+            <input
+              id="email"
+              v-model="email"
+              class="input"
+              type="email"
+              placeholder="name@email.com"
+              required
+            />
+            <button type="button" class="btn ghost" @click="checkEmail" :disabled="checkingEmail">
+              {{ checkingEmail ? '확인 중...' : '중복 확인' }}
+            </button>
+          </div>
+          <p v-if="emailCheckMessage" class="email-check-message" :class="emailAvailable ? 'success' : 'error'">
+            {{ emailCheckMessage }}
+          </p>
         </div>
         <div class="field">
           <label for="nickname">닉네임</label>
@@ -26,7 +41,7 @@
           <label for="password">비밀번호</label>
           <input id="password" v-model="password" class="input" type="password" placeholder="8자 이상 입력" required />
         </div>
-        <button class="btn primary" type="submit" :disabled="loading">
+        <button class="btn primary" type="submit" :disabled="loading || !emailAvailable">
           {{ loading ? '가입 중...' : '가입하기' }}
         </button>
       </form>
@@ -39,17 +54,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '../api/user'
+import http from '../api/http'
 
 const email = ref('')
 const nickname = ref('')
 const password = ref('')
 const loading = ref(false)
+const checkingEmail = ref(false)
+const emailAvailable = ref(false)
+const emailCheckMessage = ref('')
 const router = useRouter()
 
+watch(email, () => {
+  emailAvailable.value = false
+  emailCheckMessage.value = ''
+})
+
 const doRegister = async () => {
+  if (!emailAvailable.value) {
+    alert('이메일 중복 확인을 먼저 완료해주세요.')
+    return
+  }
+
   loading.value = true
   try {
     await register({
@@ -64,6 +93,34 @@ const doRegister = async () => {
     alert('가입에 실패했습니다. 정보를 확인해주세요.')
   } finally {
     loading.value = false
+  }
+}
+
+const checkEmail = async () => {
+  if (!email.value) {
+    emailCheckMessage.value = '이메일을 입력해주세요.'
+    emailAvailable.value = false
+    return
+  }
+
+  checkingEmail.value = true
+  try {
+    const { data } = await http.get('/users/check-email', {
+      params: { email: email.value }
+    })
+    if (data.available) {
+      emailAvailable.value = true
+      emailCheckMessage.value = '사용 가능한 이메일입니다.'
+    } else {
+      emailAvailable.value = false
+      emailCheckMessage.value = '이미 사용 중인 이메일입니다.'
+    }
+  } catch (error) {
+    console.error(error)
+    emailAvailable.value = false
+    emailCheckMessage.value = '이메일 확인 중 오류가 발생했습니다.'
+  } finally {
+    checkingEmail.value = false
   }
 }
 </script>
@@ -91,6 +148,29 @@ const doRegister = async () => {
 .helper a {
   font-weight: 700;
   color: var(--accent-strong);
+}
+
+.email-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.email-input-row .btn {
+  white-space: nowrap;
+  padding-inline: 16px;
+}
+
+.email-check-message {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.email-check-message.success {
+  color: var(--accent-strong);
+}
+
+.email-check-message.error {
+  color: var(--warning-strong, #d93025);
 }
 
 @media (max-width: 760px) {
