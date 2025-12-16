@@ -7,6 +7,17 @@
 
     <div class="surface panel profile-grid">
       <div class="intro">
+      <p class = "pill tag-soft"> Account</p>
+      <div class = "avatar-wrap">
+        <div class = "avatar">
+          <img
+            class="avatar"
+            :src = "profileImg || defaultAvatar"
+            @error="e => (e.target.src = defaultAvatar)"
+            alt = "프로필 이미지"
+            />
+      </div>
+    </div>
         <p class="pill tag-soft">Account</p>
         <div class="hero-copy">
           <h3>{{ user?.nickname || '사용자' }}님의 공간</h3>
@@ -28,6 +39,10 @@
           <label for="profileImg">프로필 이미지 URL</label>
           <input id="profileImg" v-model="profileImg" class="input" placeholder="https://example.com/avatar.png" />
         </div>
+        <div class="field">
+          <label for="currentPassword">현재 비밀번호</label>
+          <input id="currentPassword" type="password" v-model="currentPassword" class="input" placeholder="현재 비밀번호를 입력하세요" required />
+        </div>
         <div class="actions">
           <button class="btn primary" type="submit">변경사항 저장</button>
         </div>
@@ -37,12 +52,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ErrorCodes, ref } from 'vue'
 import { getMyInfo, updateProfile } from '../api/user'
 
 const user = ref(null)
 const nickname = ref('')
 const profileImg = ref('')
+const password = ref('')
 
 const load = async () => {
   const res = await getMyInfo()
@@ -52,13 +68,24 @@ const load = async () => {
 }
 
 const update = async () => {
+  try{
   await updateProfile({
     nickname: nickname.value,
-    profileImg: profileImg.value
+    profileImg: profileImg.value,
+    currentPassword: password.value
   })
 
   alert('프로필이 업데이트되었습니다.')
   load()
+} catch (err){
+  if (err.response?.status === 400) {
+    alert(err.response.data.message || '비밀번호가 일치하지 않습니다.')
+  }else if(err.response?.status === 401){
+    alert('로그인이 필요합니다')
+  } else{
+    alert('알 수 없는 오류가 발생했습니다.')    
+    }
+  }
 }
 
 load()
@@ -81,6 +108,32 @@ load()
   display: flex;
   justify-content: flex-end;
 }
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #eee;
+  background-color: #eaeaea;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-wrap{
+  display: flex;
+  justify-content: center;
+}
+
 
 @media (max-width: 900px) {
   .profile-grid {

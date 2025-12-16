@@ -14,6 +14,15 @@
       </div>
 
       <div class="nav-actions">
+        <div
+          v-if="auth.user"
+          class ="avatar-sm">
+          <img
+            :src="auth.user?.profileImg || defaultAvatar"
+            @error="e => (e.target.src = defaultAvatar)"
+            alt="profile"
+          />
+        </div>
         <span v-if="auth.user" class="user-chip">안녕하세요, {{ auth.user.nickname }}님</span>
         <button v-if="auth.user" class="btn ghost" type="button" @click="handleLogout">로그아웃</button>
         <router-link v-else class="btn primary" to="/register">지금 시작하기</router-link>
@@ -27,8 +36,9 @@ import { useRouter } from 'vue-router'
 import { logout } from '../api/user'
 import { useAuthStore } from '../store/auth'
 
-const router = useRouter()
+
 const auth = useAuthStore()
+const router = useRouter()
 
 const handleLogout = async () => {
   try {
@@ -51,7 +61,7 @@ const handleLogout = async () => {
 
 .nav-inner {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 18px;
 }
@@ -113,6 +123,29 @@ const handleLogout = async () => {
 .btn {
   height: 40px;
 }
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+
+  border: 1px solid #ddd;
+  background: #f2f2f2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  cursor: pointer;
+}
+
+.avatar-sm img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 
 @media (max-width: 760px) {
   .nav-inner {
