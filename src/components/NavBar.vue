@@ -7,8 +7,8 @@
       </router-link>
 
       <div class="nav-links">
-        <router-link to="/">로그인</router-link>
-        <router-link to="/register">가입하기</router-link>
+        <router-link v-if="!auth.user" to="/">로그인</router-link>
+        <router-link v-if="!auth.user" to="/register">가입하기</router-link>
         <router-link to="/main">할 일</router-link>
         <router-link to="/mypage">프로필</router-link>
       </div>
@@ -18,27 +18,30 @@
           v-if="auth.user"
           class ="avatar-sm">
           <img
-            :src="auth.user?.profileImg || defaultAvatar"
+            :src="avatarSrc"
             @error="e => (e.target.src = defaultAvatar)"
             alt="profile"
           />
         </div>
         <span v-if="auth.user" class="user-chip">안녕하세요, {{ auth.user.nickname }}님</span>
         <button v-if="auth.user" class="btn ghost" type="button" @click="handleLogout">로그아웃</button>
-        <router-link v-else class="btn primary" to="/register">지금 시작하기</router-link>
       </div>
     </div>
   </nav>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout } from '../api/user'
 import { useAuthStore } from '../store/auth'
+import defaultAvatar from '../assets/default-avatar.svg'
+import { resolveProfileImage } from '../utils/image'
 
 
 const auth = useAuthStore()
 const router = useRouter()
+const avatarSrc = computed(() => resolveProfileImage(auth.user?.profileImg) || defaultAvatar)
 
 const handleLogout = async () => {
   try {
@@ -73,7 +76,7 @@ const handleLogout = async () => {
   font-weight: 800;
   font-size: 18px;
   letter-spacing: -0.02em;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .brand-dot {
@@ -81,7 +84,7 @@ const handleLogout = async () => {
   height: 12px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.18);
+  box-shadow: 0 0 0 6px rgba(14, 32, 127, 0.18);
 }
 
 .nav-links {
@@ -95,14 +98,14 @@ const handleLogout = async () => {
 .nav-links a {
   padding: 8px 12px;
   border-radius: 10px;
-  color: #1f2937;
+  color: var(--text);
   font-weight: 600;
   transition: background 150ms ease, color 150ms ease;
 }
 
 .nav-links a.router-link-active {
-  background: #e0f2fe;
-  color: #075985;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .nav-actions {
@@ -115,8 +118,8 @@ const handleLogout = async () => {
 .user-chip {
   padding: 8px 12px;
   border-radius: 12px;
-  background: #e5f6ff;
-  color: #0f172a;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -130,8 +133,8 @@ const handleLogout = async () => {
   border-radius: 50%;
   overflow: hidden;
 
-  border: 1px solid #ddd;
-  background: #f2f2f2;
+  border: 1px solid var(--border);
+  background: #d9d9d9;
 
   display: flex;
   align-items: center;

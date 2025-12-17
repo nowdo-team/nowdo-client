@@ -39,7 +39,15 @@
         </div>
         <div class="field">
           <label for="password">비밀번호</label>
-          <input id="password" v-model="password" class="input" type="password" placeholder="8자 이상 입력" required />
+          <input
+            id="password"
+            v-model="password"
+            class="input"
+            type="password"
+            minlength="6"
+            placeholder="6자 이상 입력"
+            required
+          />
         </div>
         <button class="btn primary" type="submit" :disabled="loading || !emailAvailable">
           {{ loading ? '가입 중...' : '가입하기' }}
@@ -129,16 +137,35 @@ const checkEmail = async () => {
 .auth-page {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   align-items: center;
+  position: relative;
+  padding: clamp(20px, 5vw, 40px);
+  border-radius: 32px;
+  overflow: hidden;
+  background-image: linear-gradient(rgba(14, 32, 127, 0.55), rgba(14, 32, 127, 0.35)),
+    url('../assets/sumongi-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+}
+
+.auth-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero {
   display: grid;
   gap: 12px;
+  color: #fff;
+  text-shadow: 0 8px 24px rgba(11, 18, 74, 0.5);
 }
 
 .auth-card {
   width: min(420px, 100%);
   justify-self: end;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  color: var(--text);
 }
 
 .helper {

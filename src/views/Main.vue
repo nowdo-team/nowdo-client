@@ -5,23 +5,23 @@
         <span class="pill tag-soft">오늘도 차분하게</span>
         <h1>NOWDO에서 할 일을 정리하세요</h1>
         <p>간결한 카드와 타이머로 해야 할 일을 한눈에 모았습니다. 가장 중요한 일부터 시작해 보세요.</p>
-        <div class="hero-actions">
-          <router-link class="btn ghost" to="/mypage">프로필 관리</router-link>
-          <button class="btn" type="button" @click="doLogout">로그아웃</button>
+      </div>
+      <div v-if="auth.user" class="hero-mini-profile">
+        <div class="mini-avatar">
+          <img :src="heroAvatar" @error="e => (e.target.src = defaultAvatar)" alt="프로필 이미지" />
+        </div>
+        <div class="mini-meta">
+          <strong>{{ auth.user?.nickname || '사용자' }}</strong>
+          <span class="status-pill">활동중</span>
         </div>
       </div>
-      <div class="card profile-card">
-        <div class="profile-row">
-          <span class="label">닉네임</span>
-          <strong>{{ auth.user?.nickname || '-' }}</strong>
+      <div v-else class="hero-mini-profile placeholder">
+        <div class="mini-avatar">
+          <img :src="defaultAvatar" alt="NowDo" />
         </div>
-        <div class="profile-row">
-          <span class="label">이메일</span>
-          <span>{{ auth.user?.email || '-' }}</span>
-        </div>
-        <div class="profile-row">
-          <span class="label">상태</span>
-          <span class="pill">{{ auth.user?.status || 'ACTIVE' }}</span>
+        <div class="mini-meta">
+          <strong>로그인이 필요합니다</strong>
+          <span class="status-pill muted">대기중</span>
         </div>
       </div>
     </div>
@@ -91,7 +91,7 @@
               </div>
             </div>
             <div class="todo-buttons">
-              <button type="button" class="btn ghost tiny" @click="openTimer(todo)">타이머</button>
+              <button type="button" class="btn ghost tiny" @click="openTimer(todo)">NowDo!</button>
               <button type="button" class="btn tiny" @click="startEdit(todo)">수정</button>
               <button type="button" class="btn ghost tiny" @click="removeTodo(todo)">삭제</button>
             </div>
@@ -147,20 +147,16 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { createTodo, deleteTodo, fetchTodos, updateTodo } from '../api/todo'
-import { logout } from '../api/user'
+import defaultAvatar from '../assets/default-avatar.svg'
+import { resolveProfileImage } from '../utils/image'
 
 const router = useRouter()
 const auth = useAuthStore()
-
-const doLogout = async () => {
-  await logout()
-  auth.clearUser()
-  router.push('/')
-}
+const heroAvatar = computed(() => resolveProfileImage(auth.user?.profileImg) || defaultAvatar)
 
 const todos = ref([])
 const todosLoading = ref(false)
@@ -393,33 +389,91 @@ onBeforeUnmount(() => {
 .dashboard-hero {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
-  gap: 20px;
+  gap: 14px;
   align-items: center;
+  padding: clamp(18px, 3vw, 28px);
+  border-radius: 28px;
+  background-image: linear-gradient(135deg, rgba(14, 32, 127, 0.85), rgba(14, 32, 127, 0.4)),
+    url('../assets/sumongi-bg-2.jpg');
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  box-shadow: 0 24px 48px rgba(8, 11, 30, 0.22);
 }
 
-.hero-actions {
+.dashboard-hero .hero-copy p {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dashboard-hero .pill {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.hero-mini-profile {
+  justify-self: center;
+  width: 100%;
+  max-width: 360px;
   display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.profile-card {
-  display: grid;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
+  padding: 18px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  min-height: 220px;
 }
 
-.profile-row {
+.hero-mini-profile.placeholder {
+  opacity: 0.85;
+}
+
+.mini-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mini-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-meta {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid var(--border);
+  gap: 10px;
+  font-size: 1.05rem;
 }
 
-.profile-row .label {
-  color: var(--muted);
+.mini-meta strong {
+  font-size: 1.15rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 255, 157, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #bbf7d0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-pill.muted {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .todo-shell {

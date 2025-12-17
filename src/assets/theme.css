@@ -1,15 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #f4f7fb;
+  --bg: #f2f3ff;
   --surface: #ffffff;
-  --card: #f9fbfe;
-  --text: #0f172a;
-  --muted: #6b7280;
-  --accent: #0ea5e9;
-  --accent-strong: #0284c7;
-  --border: #e5e7eb;
-  --shadow: 0 14px 45px rgba(15, 23, 42, 0.08);
+  --card: #f7f8ff;
+  --text: #0b124a;
+  --muted: #6d719b;
+  --accent: #0e207f;
+  --accent-strong: #09145c;
+  --accent-soft: #e2e4ff;
+  --border: #d9d9d9;
+  --shadow: 0 14px 45px rgba(14, 32, 127, 0.12);
   color-scheme: light;
 }
 
@@ -23,9 +24,9 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: 'Manrope', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-  background: radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.08), transparent 25%),
-    radial-gradient(circle at 90% 10%, rgba(16, 185, 129, 0.08), transparent 25%),
-    linear-gradient(180deg, #f9fbff 0%, #f3f6fb 45%, #eef3f9 100%);
+  background: radial-gradient(circle at 10% 20%, rgba(14, 32, 127, 0.1), transparent 28%),
+    radial-gradient(circle at 90% 15%, rgba(217, 217, 217, 0.35), transparent 30%),
+    linear-gradient(180deg, #f7f8ff 0%, #f2f3ff 45%, #ecefff 100%);
   color: var(--text);
 }
 
@@ -97,7 +98,7 @@ select {
   padding: 0 16px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: #f1f5f9;
+  background: var(--accent-soft);
   color: var(--text);
   font-weight: 600;
   cursor: pointer;
@@ -106,7 +107,7 @@ select {
 
 .btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 30px rgba(2, 132, 199, 0.12);
+  box-shadow: 0 10px 30px rgba(14, 32, 127, 0.22);
 }
 
 .btn:disabled {
@@ -118,9 +119,9 @@ select {
 
 .btn.primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: white;
+  color: #fff;
   border-color: transparent;
-  box-shadow: 0 14px 32px rgba(2, 132, 199, 0.25);
+  box-shadow: 0 18px 36px rgba(14, 32, 127, 0.35);
 }
 
 .btn.ghost {
@@ -135,7 +136,7 @@ select {
 
 .field label {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .input {
@@ -144,15 +145,15 @@ select {
   padding: 0 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: #f8fafc;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  background: #f5f6ff;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
 
 .input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.16);
-  background: white;
+  box-shadow: 0 0 0 4px rgba(14, 32, 127, 0.16);
+  background: #fff;
 }
 
 .pill {
@@ -161,16 +162,16 @@ select {
   gap: 6px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #075985;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
   font-weight: 600;
   font-size: 12px;
 }
 
 .tag-soft {
-  background: #ecfeff;
-  color: #0f172a;
-  border: 1px solid #dbeafe;
+  background: #f4f5ff;
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .section-title {
