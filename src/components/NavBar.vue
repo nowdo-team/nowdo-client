@@ -3,7 +3,7 @@
     <div class="nav-inner">
       <router-link to="/main" class="brand">
         <span class="brand-dot"></span>
-        <span>Nowdo</span>
+        <span>NowDo</span>
       </router-link>
 
       <div class="nav-links">
